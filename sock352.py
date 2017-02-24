@@ -18,7 +18,8 @@ SOCK352_HAS_OPT = 0xA0
 udp_sock = type(syssock.socket)
 server_addres = ""
 
-
+send = ()
+receive = ()
 def init(UDPportTx, UDPportRx):   # initialize your UDP socket here
     print 'create udp socket here'
     # Create a UDP/Datagram Socket
@@ -30,18 +31,20 @@ def init(UDPportTx, UDPportRx):   # initialize your UDP socket here
     print(UDPportRx, UDPportTx)
     server_address = ('', int(UDPportRx))
     udp_sock.bind(server_address)
+    global send
+    global receive
+    send = ('',int(UDPportRx))
+    receive = ('',int(UDPportTx))
     pass
 
 
 class socket:
     def __init__(self):  # fill in your code here
         print 'constructor'
-        self.address = ('localhost', 9999)
         return
 
     def bind(self, address):
         # NULL FUNCTION FOR PART 1
-        print 'bind'
         return
 
     def connect(self, address):  # fill in your code here
@@ -74,7 +77,8 @@ class socket:
             #   add the packet to the outbound queue
             my_addr = ('localhost', 9999)
             self.address = my_addr
-            udp_sock.sendto(header, my_addr)
+            print "sending data to " + str(send)
+            udp_sock.sendto(header, send)
             print 'message was sent'
             #   set the timeout
             #sendSock.settimeout(0.2)
@@ -103,7 +107,7 @@ class socket:
 
     def accept(self):
         print 'accept'
-        (clientsocket, address) = (udp_sock, self.address)  # change this to your code
+        (clientsocket, address) = (udp_sock, receive)  # change this to your code
 
         return (clientsocket, address)
 
@@ -112,8 +116,8 @@ class socket:
         return
 
     def send(self, buffer):
-        'print send'
-        bytessent = udp_sock.sendto(buffer, ('localhost', 8888))     # fill in your code here
+        print "sending data to " + str(send)
+        bytessent = udp_sock.sendto(buffer, send)     # fill in your code here
         return bytessent
 
     def recv(self, nbytes):
