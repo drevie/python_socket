@@ -63,7 +63,7 @@ class socket:
         # Next
         ack_no = sequence_no + 1
         window = 0
-        payload_len = 0
+        payload_len = 63000
 
         # Create a new packet header with the SYN bit set in the flags (Use the struct.pack method)
         sock352PktHdrData = '!BBBBHHLLQQLL'
@@ -84,7 +84,7 @@ class socket:
             #sendSock.settimeout(0.2)
             try:
                 udp_sock.settimeout(1)
-                data, server = udp_sock.recvfrom(4096)
+                data, server = udp_sock.recvfrom(1024)
                  #      wait for the return SYN
                 a, flags, c, d, e, f, g, h, i, ack, k, l = struct.unpack(sock352PktHdrData, data)
                 if flags & 0x1 == 1 and ack == 1:
@@ -107,7 +107,7 @@ class socket:
 
     def accept(self):
         print 'accept'
-        (clientsocket, address) = (udp_sock, receive)  # change this to your code
+        (clientsocket, address) = (self, send)  # change this to your code
 
         return (clientsocket, address)
 
@@ -117,21 +117,40 @@ class socket:
 
     def send(self, buffer):
         print "sending data to " + str(send)
-        bytessent = udp_sock.sendto(buffer, send)     # fill in your code here
-        return bytessent
+        print buffer.__sizeof__()
+        udp_sock.settimeout(.2)
+        
+        while(True):
+            try:
+                bytessent = udp_sock.sendto(buffer, send)     # fill in your code here
+                return bytessent
+            except syssock.timeout:
+                continue
 
     def recv(self, nbytes):
+        print "got into recv"
+        chunks = []
+        bytesreceived = 0
+        while bytesreceived < nbytes:
+            chunk = udp_sock.recv(min(nbytes - bytesreceived, 4096))
+            if chunk == '':
+                raise RuntimeError("socket contents broken")
+            chunks.append(chunk)
+            bytesreceived = bytesreceived + len(chunk)
+        #bytesreceived = udp_sock.recv(nbytes)
+        """
         bytesreceived = 0     # fill in your code here
         chunks = []
         while bytesreceived < nbytes:
             print 'hey'
             udp_sock.settimeout(1)
             try:
-                chunk = udp_sock.recv(min(nbytes - bytesreceived, 2048))
+                chunk = udp_sock.recv(min(nbytes - bytesreceived, 4096))
                 if chunk == '':
                     raise RuntimeError("socket contents broken")
                 chunks.append(chunk)
                 bytesreceived = bytesreceived + len(chunk)
             except syssock.timeout:
                 print "recv timeout error"
-        return bytesreceived
+        """
+        return chunk
