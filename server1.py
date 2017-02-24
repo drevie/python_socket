@@ -89,10 +89,12 @@ def main():
     while (bytes_to_receive > 0):
         print("while")
         if (bytes_to_receive >= FRAGMENTSIZE):
+            print ("b 2 recv ", bytes_to_receive, " >= ", "f size: ", FRAGMENTSIZE)
             fragment = s2.recv(FRAGMENTSIZE)
         else:
+            print("else")
             fragment = s2.recv(bytes_to_receive)
-
+        print "Done"
         mdhash.update(fragment)
         bytes_to_receive = bytes_to_receive - len(fragment)
         fd.write(fragment)
@@ -102,10 +104,11 @@ def main():
 
     # finish computing the MD5 hash
     local_digest = mdhash.digest()
-
+    print "HIIIIII"
     # receive the size of the remote hash
     dl = longPacker.unpack(s2.recv(4))
     digestlen = dl[0]
+    print("D LENGTH: ". digestlen)
     remote_digest = s2.recv(digestlen)
 
     # check is the size matches

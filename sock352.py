@@ -84,7 +84,7 @@ class socket:
             #sendSock.settimeout(0.2)
             try:
                 udp_sock.settimeout(1)
-                data, server = udp_sock.recvfrom(4096)
+                data, server = udp_sock.recvfrom(1024)
                  #      wait for the return SYN
                 a, flags, c, d, e, f, g, h, i, ack, k, l = struct.unpack(sock352PktHdrData, data)
                 if flags & 0x1 == 1 and ack == 1:
@@ -107,7 +107,7 @@ class socket:
 
     def accept(self):
         print 'accept'
-        (clientsocket, address) = (udp_sock, receive)  # change this to your code
+        (clientsocket, address) = (self, receive)  # change this to your code
 
         return (clientsocket, address)
 
@@ -116,9 +116,16 @@ class socket:
         return
 
     def send(self, buffer):
-        print "sending data to " + str(send)
-        bytessent = udp_sock.sendto(buffer, send)     # fill in your code here
-        return bytessent
+        print "sending data to " + str(receive)
+        print buffer.__sizeof__()
+        udp_sock.settimeout(.2)
+        
+        while(True):
+            try:
+                bytessent = udp_sock.sendto(buffer, receive)     # fill in your code here
+                return bytessent
+            except syssock.timeout:
+                continue
 
     def recv(self, nbytes):
         bytesreceived = 0     # fill in your code here
