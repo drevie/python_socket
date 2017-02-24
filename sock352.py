@@ -33,8 +33,8 @@ def init(UDPportTx, UDPportRx):   # initialize your UDP socket here
     udp_sock.bind(server_address)
     global send
     global receive
-    send = ('',int(UDPportRx))
-    receive = ('',int(UDPportTx))
+    send = ('',int(UDPportTx))
+    receive = ('',int(UDPportRx))
     pass
 
 
@@ -77,8 +77,8 @@ class socket:
             #   add the packet to the outbound queue
             my_addr = ('localhost', 9999)
             self.address = my_addr
-            print "sending data to " + str(send)
-            udp_sock.sendto(header, send)
+            print "sending data to " + str(receive)
+            udp_sock.sendto(header, receive)
             print 'message was sent'
             #   set the timeout
             #sendSock.settimeout(0.2)
