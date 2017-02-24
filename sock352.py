@@ -15,36 +15,37 @@ SOCK352_HAS_OPT = 0xA0
 # these functions are global to the class and
 # define the UDP ports all messages are sent
 # and received from
-s = None
+udp_sock = type(syssock.socket)
+server_addres = ""
 
 
 def init(UDPportTx, UDPportRx):   # initialize your UDP socket here
-    if UDPportRx < 0 or UDPportRx > 65535:
-        return -1
+    print 'create udp socket here'
+    # Create a UDP/Datagram Socket
+    global udp_sock
+    udp_sock = syssock.socket(syssock.AF_INET, syssock.SOCK_DGRAM)
+    # Bind the port to the Rx (receive) port number
+    print UDPportRx
+    global server_address
+    print(UDPportRx, UDPportTx)
+    server_address = ('', int(UDPportRx))
+    udp_sock.bind(server_address)
+    pass
 
-    if UDPportTx < 0 or UDPportTx > 65535:
-        return -1
-
-    if UDPportRx == 0:
-        UDPportRx = 27182
-    if UDPportTx == 0:
-        UDPportTx = 27182
-
-    s = socket()
-
-    s.bind(('', UDPportRx))
-    return 1
 
 class socket:
-
     def __init__(self):  # fill in your code here
+        print 'constructor'
+        self.address = ('localhost', 9999)
         return
 
     def bind(self, address):
         # NULL FUNCTION FOR PART 1
+        print 'bind'
         return
 
     def connect(self, address):  # fill in your code here
+        print 'connect'
         # Create a new sequence number
         sequence_no = random.randint(0, 1000)
         # Set Version to 0x1
@@ -67,72 +68,66 @@ class socket:
         udpPkt_hdr_data = struct.Struct(sock352PktHdrData)
         header = udpPkt_hdr_data.pack(version, flags, opt_ptr, protocol, header_len,
             checksum, source_port, dest_port, sequence_no, ack_no, window, payload_len)
-        
+        version = 0x1
+
         while True:
-            # add packet to outbound queue
-            s.sendto(header, address)
+            #   add the packet to the outbound queue
+            my_addr = ('localhost', 9999)
+            self.address = my_addr
+            udp_sock.sendto(header, my_addr)
+            print 'message was sent'
+            #   set the timeout
+            #sendSock.settimeout(0.2)
+            try:
+                udp_sock.settimeout(1)
+                data, server = udp_sock.recvfrom(4096)
+                 #      wait for the return SYN
+                a, flags, c, d, e, f, g, h, i, ack, k, l = struct.unpack(sock352PktHdrData, data)
+                if flags & 0x1 == 1 and ack == 1:
+                    print 'we are connected'
+                    return
+                # sendSock.settimeout(0.0)      
+               
+                break
+            except syssock.timeout:
+                print ("timeout error")
+                continue
+                #        if there was a timeout, retransmit the SYN packet 
+                #   set the outbound and inbound sequence numbers            
 
-        # set the timeout
-
-        #   wait for the return SYN
-
-        #       if there was a timeout, retransmit the SYN packet
-
-        # set the outbound and inbound sequence number
-
-
-        return
+        return 1
 
     def listen(self, backlog):
+        print 'listen'
         return
 
     def accept(self):
-        (clientsocket, address) = (1, 1)  # change this to your code
+        print 'accept'
+        (clientsocket, address) = (udp_sock, self.address)  # change this to your code
 
         return (clientsocket, address)
 
     def close(self):   # fill in your code here
+        udp_sock.close()
         return
 
     def send(self, buffer):
-        bytessent = 0     # fill in your code here
-
-        sequence_no = random.randint(0, 1000)
-        # Set Version to 0x1
-        version = 0x1
-        # protocol, opt_ptr, source_port, dest_port must be set to 0
-        flags = SOCK352_SYN
-        opt_ptr = 0
-        checksum = 0
-        protocol = 0
-        source_port = 0
-        dest_port = 0
-        # Next
-        ack_no = sequence_no + 1
-        window = 0
-        payload_len = 0
-        sock352PktHdrData = '!BBBBHHLLQQLL'
-        header_len = struct.calcsize(sock352PktHdrData)
-        udpPkt_hdr_data = struct.Struct(sock352PktHdrData)
-        header = udpPkt_hdr_data.pack(version, flags, opt_ptr, protocol, header_len,
-            checksum, source_port, dest_port, sequence_no, ack_no, window, payload_len)
-        
-        # Create a new UDP packet with the header and buffer 
-        # Send the UDP packet to the destinatoin and transmit port
-        # Set the timeout
-        # wait or check for the ack or timeout
-
-
+        'print send'
+        bytessent = udp_sock.sendto(buffer, ('localhost', 8888))     # fill in your code here
         return bytessent
 
     def recv(self, nbytes):
-        return
         bytesreceived = 0     # fill in your code here
         chunks = []
         while bytesreceived < nbytes:
-            chunk = self.sock.recv(min(nbytes - bytesreceived), 2048)
-            if chunk == '':
-                raise RuntimeError("socket contents broken")
-            chunks.append(chunk)
-            bytesreceived = bytesreceived + len(chunk)
+            print 'hey'
+            udp_sock.settimeout(1)
+            try:
+                chunk = udp_sock.recv(min(nbytes - bytesreceived, 2048))
+                if chunk == '':
+                    raise RuntimeError("socket contents broken")
+                chunks.append(chunk)
+                bytesreceived = bytesreceived + len(chunk)
+            except syssock.timeout:
+                print "recv timeout error"
         return bytesreceived

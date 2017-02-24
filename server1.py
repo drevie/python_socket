@@ -71,7 +71,7 @@ def main():
 
     # when accept returns, the client is connected
     (s2, address) = s.accept()
-
+    print "HEY"
     # this receives the size of the file
     # as a 4 byte integer in network byte order (big endian)
     longPacker = struct.Struct("!L")
@@ -87,6 +87,7 @@ def main():
 
     # main loop to receive the data from the client
     while (bytes_to_receive > 0):
+        print("while")
         if (bytes_to_receive >= FRAGMENTSIZE):
             fragment = s2.recv(FRAGMENTSIZE)
         else:
